@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lasya & Helmy | Pernikahan Digital</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        'name': 'Lasya & Helmi Wedding',
+        'short_name': 'Wedding',
+        'icons': [{'src': 'data:image/svg+xml;base64,...', 'sizes': '192x192'}],
+        'start_url': '/',
+        'display': 'standalone'
+    }">
+    <meta name="theme-color" content="#f8c7cc">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Undangan Digital Lasya & Helmy">
+    <meta property="og:description" content="Bergabunglah dengan kebahagiaan kami">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630/f8c7cc/ffffff?text=Wedding">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/lib/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    
+    <style>
+        :root {
+            --primary: #f8c7cc; --secondary: #d4a5a5; --accent: #b5838d; --dark: #2d1b3a;
+        }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #1a0b2e 0%, #2d1b3a 50%, #4a235a 100%);
+            overflow-x: hidden;
+        }
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .glass { 
+            backdrop-filter: blur(20px); 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+        }
+        .card-flip { perspective: 1000px; }
+        .card-inner { transition: transform 0.8s; transform-style: preserve-3d; }
+        .card-flip:hover .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { backface-visibility: hidden; position: absolute; }
+        .card-back { transform: rotateY(180deg); }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+        .floating { animation: float 6s ease-in-out infinite; }
+    </style>
+</head>
+<body class="text-white">
+
+<!-- LOADING SCREEN -->
+<div id="loader" class="fixed inset-0 bg-gradient-to-br from-primary to-accent z-50 flex items-center justify-center">
+    <div class="text-center">
+        <div class="w-24 h-24 border-4 border-white/30 border-t-white rounded-full mx-auto mb-8 animate-spin"></div>
+        <div class="font-serif text-2xl">Loading Love...</div>
+    </div>
+</div>
+
+<!-- MUSIC & CONTROLS -->
+<audio id="bgMusic" loop preload="auto">
+    <source src="https://www.soundjay.com/misc/wedding-chimes-1.mp3" type="audio/mpeg">
+</audio>
+<button id="muteBtn" class="fixed top-6 right-6 z-50 glass p-3 rounded-full w-14 h-14 flex items-center justify-center hover:scale-110">
+    <i class="fas fa-volume-up"></i>
+</button>
+<button id="shareBtn" class="fixed top-6 left-6 z-50 glass p-3 rounded-full w-14 h-14 flex items-center justify-center hover:scale-110" title="Share">
+    <i class="fas fa-share-alt"></i>
+</button>
+
+<!-- CONFIG -->
+<script>
+CONFIG = {
+    couple: { groom: 'HELMY', bride: 'LASYA' },
+    date: 'Minggu, 25 Februari 2024',
+    time: { akad: '08.30 WIB', resepsi: '11.00 WIB' },
+    venue: {
+        akad: { name: 'Masjid Al-Irsyad', address: 'Jl. Sudirman No.123', lat: -6.2088, lng: 106.8456 },
+        resepsi: { name: 'Grand Ballroom Hotel Mulia', address: 'Jl. Asia Afrika', lat: -6.2115, lng: 106.8201 }
+    },
+    weatherApi: 'https://api.openweathermap.org/data/2.5/weather?lat=-6.2088&lon=106.8456&appid=YOUR_API_KEY&units=metric',
+    gallery: ['https://picsum.photos/800/600?random=1', 'https://picsum.photos/800/600?random=2']
+};
+</script>
+
+<!-- HERO -->
+<section class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <div class="absolute inset-0 hero-bg">
+        <div class="floating absolute top-20 left-10 w-20 h-20 border border-white/20 rounded-full"></div>
+        <div class="floating absolute bottom-20 right-20 w-32 h-32 border-2 border-primary/30 rounded-full animation-delay-2s"></div>
+    </div>
+    
+    <div class="text-center z-10 px-8 glass p-16 rounded-3xl max-w-4xl mx-auto">
+        <div class="mb-12">
+            <div class="inline-flex items-center gap-4 mb-8 px-8 py-4 bg-white/10 rounded-full">
+                <div class="w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                    <i class="fas fa-heart text-2xl"></i>
+                </div>
+            </div>
+            <h1 class="font-serif text-6xl md:text-8xl font-light mb-8 leading-tight">
+                <span id="groom"></span><br>
+                <span class="text-primary">&</span><br>
+                <span id="bride"></span>
+            </h1>
+            <div id="typewriter" class="font-serif text-3xl opacity-0"></div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-6 justify-center">
+            <a href="#event" class="glass px-12 py-6 rounded-3xl font-medium hover:scale-105 group">
+                Detail Acara <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2"></i>
+            </a>
+            <a href="#rsvp" class="glass px-12 py-6 rounded-3xl font-medium hover:scale-105">
+                RSVP <i class="fas fa-check ml-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- COUNTDOWN -->
+<section class="py-24 px-8">
+    <div class="max-w-4xl mx-auto text-center glass p-12 rounded-3xl">
+        <h2 class="font-serif text-4xl mb-12">⏰ Countdown</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="countdown">
+            <div class="glass p-8 rounded-2xl"><div class="text-4xl font-bold" id="days">00</div><div>Hari</div></div>
+            <div class="glass p-8 rounded-2xl"><div class="text-4xl font-bold" id="hours">00</div><div>Jam</div></div>
+            <div class="glass p-8 rounded-2xl"><div class="text-4xl font-bold" id="minutes">00</div><div>Menit</div></div>
+            <div class="glass p-8 rounded-2xl"><div class="text-4xl font-bold" id="seconds">00</div><div>Detik</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- EVENT 3D CARDS -->
+<section id="event" class="py-32 px-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="text-center mb-24">
+            <h2 class="font-serif text-6xl font-light mb-6">Hari Bahagia</h2>
+            <p class="text-xl opacity-75">25 Februari 2024</p>
+        </div>
+        <div class="grid md:grid-cols-2 gap-12">
+            <div class="card-flip mx-auto max-w-md">
+                <div class="card-inner glass p-12 rounded-3xl h-80">
+                    <div class="card-front text-center">
+                        <i class="fas fa-mosque text-5xl text-primary mb-6"></i>
+                        <h3 class="font-serif text-3xl mb-4">Akad Nikah</h3>
+                        <p class="text-4xl" id="akad-time"></p>
+                    </div>
+                    <div class="card-back text-center">
+                        <h3 class="font-serif text-2xl mb-6" id="akad-venue-name"></h3>
+                        <p class="opacity-75 mb-8" id="akad-venue"></p>
+                        <iframe class="w-full h-32 rounded-xl" id="akad-map" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+            <div class="card-flip mx-auto max-w-md">
+                <div class="card-inner glass p-12 rounded-3xl h-80">
+                    <div class="card-front text-center">
+                        <i class="fas fa-glass-cheers text-5xl text-accent mb-6"></i>
+                        <h3 class="font-serif text-3xl mb-4">Resepsi</h3>
+                        <p class="text-4xl" id="resepsi-time"></p>
+                    </div>
+                    <div class="card-back text-center">
+                        <h3 class="font-serif text-2xl mb-6" id="resepsi-venue-name"></h3>
+                        <p class="opacity-75 mb-8" id="resepsi-venue"></p>
+                        <iframe class="w-full h-32 rounded-xl" id="resepsi-map" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WEATHER -->
+<section class="py-24 px-8">
+    <div class="max-w-md mx-auto glass p-8 rounded-3xl text-center">
+        <h3 class="font-serif text-2xl mb-4">🌤️ Cuaca Hari H</h3>
+        <div id="weather" class="space-y-4">
+            <i class="fas fa-cloud-sun text-4xl mx-auto mb-4" id="weather-icon"></i>
+            <div class="text-3xl font-bold" id="weather-temp">--°C</div>
+            <p id="weather-desc">Loading...</p>
+        </div>
+    </div>
+</section>
+
+<!-- GALLERY -->
+<section class="py-32 px-8">
+    <div class="max-w-6xl mx-auto">
+        <h2 class="font-serif text-6xl text-center font-light mb-24">📸 Moments</h2>
+        <div class="swiper gallery-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide"><img src="https://picsum.photos/800/600?random=1" class="w-full h-96 object-cover rounded-3xl glass"></div>
+                <div class="swiper-slide"><img src="https://picsum.photos/800/600?random=2" class="w-full h-96 object-cover rounded-3xl glass"></div>
+                <div class="swiper-slide"><img src="https://picsum.photos/800/600?random=3" class="w-full h-96 object-cover rounded-3xl glass"></div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+</section>
+
+<!-- LIVE GUEST COUNTER + RSVP -->
+<section id="rsvp" class="py-32 px-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
+            <div class="glass p-8 rounded-3xl text-center">
+                <h3 class="font-serif text-3xl mb-4">👥 Tamu Terkonfirmasi</h3>
+                <div class="text-5xl font-bold text-primary mb-4" id="guest-count">0</div>
+                <div class="space-y-2 opacity-75">
+                    <div><span id="hadir-count">0</span> Hadir</div>
+                    <div><span id="tidak-count">0</span> Tidak Hadir</div>
+                </div>
+            </div>
+            <div class="glass p-12 rounded-3xl">
+                <canvas id="qr-code" class="mx-auto mb-6 w-32 h-32"></canvas>
+                <p class="opacity-75 text-sm mb-4">Scan untuk RSVP</p>
+            </div>
+        </div>
+        
+        <form id="rsvpForm" class="glass p-12 rounded-3xl space-y-6">
+            <input type="text" id="guestName" placeholder="Nama Lengkap *" class="w-full p-5 rounded-3xl bg-white/10 border border-white/20 focus:ring-2 focus:ring-primary text-lg" required>
+            <select id="guestNum" class="w-full p-5 rounded-3xl bg-white/10 border border-white/20 focus:ring-2 focus:ring-primary text-lg">
+                <option value="1">1 Orang</option><option value="2">2 Orang</option><option value="3">3+ Orang</option>
+            </select>
+            <div class="flex gap-8 justify-center pt-4">
+                <label class="flex items-center gap-3 p-4 rounded-2xl glass hover:scale-105 cursor-pointer">
+                    <input type="radio" name="status" value="hadir" class="hidden peer">
+                    <i class="fas fa-check-circle w-6 h-6 peer-checked:text-primary text-gray-400"></i>
+                    <span>Hadir</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 rounded-2xl glass hover:scale-105 cursor-pointer">
+                    <input type="radio" name="status" value="tidak" class="hidden peer">
+                    <i class="fas fa-times-circle w-6 h-6 peer-checked:text-accent text-gray-400"></i>
+                    <span>Tidak Hadir</span>
+                </label>
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-primary to-accent text-dark font-semibold py-6 px-12 rounded-3xl text-xl hover:scale-105 shadow-xl">
+                Konfirmasi Kehadiran 🎉
+            </button>
+        </form>
+    </div>
+</section>
+
+<!-- VIRTUAL GIFT -->
+<section class="py-32 px-8 bg-black/20">
+    <div class="max-w-4xl mx-auto text-center glass p-16 rounded-3xl">
+        <h2 class="font-serif text-4xl mb-8">💝 Virtual Gift Registry</h2>
+        <p class="text-xl opacity-75 mb-12">Doa restu adalah hadiah terbesar</p>
+        <div class="grid md:grid-cols-3 gap-6 mb-12">
+            <div class="glass p-8 rounded-2xl hover:scale-105">
+                <i class="fas fa-prayer-rug text-4xl text-primary mb-4 mx-auto"></i>
+                <h4 class="font-semibold mb-2">Doa Restu</h4>
+                <p class="opacity-75">Sholat untuk kami</p>
+            </div>
+            <div class="glass p-8 rounded-2xl hover:scale-105">
+                <i class="fas fa-hand-holding-heart text-4xl text-accent mb-4 mx-auto"></i>
+                <h4 class="font-semibold mb-2">Ucapkan Selamat</h4>
+                <p class="opacity-75">Tinggalkan pesan</p>
+            </div>
+            <div class="glass p-8 rounded-2xl hover:scale-105">
+                <i class="fas fa-donate text-4xl text-primary mb-4 mx-auto"></i>
+                <h4 class="font-semibold mb-2">Transfer</h4>
+                <p class="opacity-75">Rekening: 1234-5678-90</p>
+            </div>
+        </div>
+        <button onclick="window.print()" class="glass px-12 py-4 rounded-3xl font-semibold hover:scale-105">
+            📄 Download PDF
+        </button>
+    </div>
+</section>
+
+<!-- FOOTER -->
